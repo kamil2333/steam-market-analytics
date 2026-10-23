@@ -5,6 +5,7 @@ import pytest
 from src.cleaning import (
     clean_dataset,
     parse_discount_percent,
+    parse_launch_date,
     parse_price_eur,
     parse_review_count,
     parse_spanish_date,
@@ -124,3 +125,104 @@ def test_clean_dataset_preserves_source_columns():
 
     assert "price" in cleaned.columns
     assert "reviews" in cleaned.columns
+
+ 
+@pytest.mark.parametrize(
+    ("value", "expected_start", "expected_end", "precision"),
+    [
+        (
+            "2025",
+            "2025-01-01",
+            "2025-12-31",
+            "year",
+        ),
+        (
+            "4.º TRIMESTRE DEL 2028",
+            "2028-10-01",
+            "2028-12-31",
+            "quarter",
+        ),
+        (
+            "1.ᵉʳ TRIMESTRE DEL 2026",
+            "2026-01-01",
+            "2026-03-31",
+            "quarter",
+        ),
+        (
+            "SEPTIEMBRE DE 2025",
+            "2025-09-01",
+            "2025-09-30",
+            "month",
+        ),
+        (
+            "FEBRERO DE 2026",
+            "2026-02-01",
+            "2026-02-28",
+            "month",
+        ),
+        (
+            "9 DIC 2016",
+            "2016-12-09",
+            "2016-12-09",
+            "day",
+        ),
+        (
+            "PRÓXIMAMENTE",
+            None,
+            None,
+            "coming_soon",
+        ),
+        (
+            None,
+            None,
+            None,
+            "missing",
+        ),
+    ],
+)
+def test_parse_launch_date(
+    value,
+    expected_start,
+    expected_end,
+    precision,
+):
+    result = parse_launch_date(value)
+
+    expected_start = (
+        pd.Timestamp(expected_start)
+        if expected_start is not None
+        else None
+    )
+    expected_end = (
+        pd.Timestamp(expected_end)
+        if expected_end is not None
+        else None
+    )
+
+    assert result["start"] == expected_start
+    assert result["end"] == expected_end
+    assert result["precision"] == precision
+
+
+def test_clean_dataset_preserves_imprecise_launch_date():
+    source = pd.DataFrame(
+        {
+            "price": ["9,75€"],
+            "original_price": ["19,50€"],
+            "discount": ["-50%"],
+            "reviews": ["1.234 reseñas de usuarios"],
+            "launch_date": ["4.º TRIMESTRE DEL 2028"],
+        }
+    )
+
+    cleaned = clean_dataset(source)
+
+    assert cleaned.loc[0, "launch_date_start"] == pd.Timestamp(
+        "2028-10-01"
+    )
+    assert cleaned.loc[0, "launch_date_end"] == pd.Timestamp(
+        "2028-12-31"
+    )
+    assert cleaned.loc[0, "launch_date_precision"] == "quarter"
+    assert pd.isna(cleaned.loc[0, "launch_date_parsed"])
+    assert cleaned.loc[0, "launch_date"] == "4.º TRIMESTRE DEL 2028"
