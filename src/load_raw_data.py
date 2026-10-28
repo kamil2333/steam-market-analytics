@@ -11,7 +11,7 @@ from src.profile_data import load_dataset
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATA_PATH = PROJECT_ROOT / "data" / "raw" / "steam-games.csv"
-ENV_PATH = PROJECT_ROOT / "conf.env"
+ENV_PATH = PROJECT_ROOT / ".env"
 
 RAW_COLUMNS = (
     "title",
@@ -52,7 +52,7 @@ INSERT_SQL = """
 
 def get_database_config() -> dict:
     """Load PostgreSQL connection settings from environment variables."""
-    load_dotenv(ENV_PATH)
+    load_dotenv(ENV_PATH, override=True)
 
     required_variables = (
         "DB_HOST",
