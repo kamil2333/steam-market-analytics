@@ -99,3 +99,25 @@ The dataset is not included in this repository. Its exact version, provenance, a
 - Power BI dashboard
 - Automated pipeline execution
 - Optional machine learning experiments
+
+
+## Preliminary analytical findings
+
+### Price distribution
+- The dataset contains 2,927 Steam store items.
+- 2,367 items have a recorded price, while 560 (19.13%) have missing prices.
+- 188 items have a listed price of €0.
+- The average recorded price is €15.89, compared with a median of €10.35. The difference suggests that higher-priced items pull the average upward.
+
+### Review data
+- Review counts are missing for 731 items.
+- Counter-Strike 2 has the highest recorded review count in this historical dataset.
+- Average review counts are substantially higher than medians in several rating categories, suggesting a right-skewed distribution.
+
+### Discount analysis
+- 641 items have a recorded discount.
+- The most common discount range is 26–50%, covering 233 items (36.35% of records with a recorded discount).
+- Discounts above 50% account for approximately 39.63% of recorded discounts.
+- The average absolute difference between recorded and calculated discount percentages is 0.05 percentage points, and no checked item exceeds the 1-percentage-point tolerance.
+
+**Data limitation:** These findings describe the collected dataset, not current Steam prices or review counts. Missing values are retained rather than assumed to be zero.
