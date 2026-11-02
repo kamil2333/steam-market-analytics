@@ -87,7 +87,25 @@ The dataset is not included in this repository. Its exact version, provenance, a
 
 ## Project Status
 
-**In progress** — initial repository setup and raw data inspection.
+**In progress**
+
+### Completed
+- Raw data profiling and quality assessment.
+- Data cleaning and transformation using Python and Pandas.
+- Automated unit tests and data validation checks.
+- PostgreSQL staging and analytical schemas.
+- Python-based data ingestion into PostgreSQL.
+- Initial SQL analyses of price distribution, review counts, and discounts.
+
+### In Progress
+- Normalization of genres and tags into relational tables.
+- Further investigation of missing values and potential data quality issues.
+
+### Planned
+- Interactive Power BI dashboard.
+- Additional analytical SQL queries and documented findings.
+- Automated testing and pipeline execution through GitHub Actions.
+- Optional machine learning experiments, depending on the analytical value of the available data.
 
 ## Future Improvements
 
