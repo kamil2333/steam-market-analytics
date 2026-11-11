@@ -31,7 +31,6 @@ INSERT_QUERY = """
     INSERT INTO analytics.steam_items (
         source_raw_id,
         title,
-        genres,
         description,
         url,
         price_eur,
@@ -43,12 +42,11 @@ INSERT_QUERY = """
         launch_date_precision,
         review_count,
         general_reviews,
-        tags,
         is_source_error
     )
     VALUES (
-        %s, %s, %s, %s, %s, %s, %s, %s,
-        %s, %s, %s, %s, %s, %s, %s, %s
+        %s, %s, %s, %s, %s, %s, %s,
+        %s, %s, %s, %s, %s, %s, %s
     )
 """
 
@@ -89,7 +87,7 @@ def prepare_analytics_records(
     source: pd.DataFrame,
     cleaned: pd.DataFrame,
 ) -> list[tuple]:
-    """Map cleaned records to the analytical table structure."""
+    """Map cleaned records to the normalized analytical table structure."""
     records = []
 
     for raw, clean in zip(
@@ -106,7 +104,6 @@ def prepare_analytics_records(
             (
                 to_database_value(raw["raw_id"]),
                 to_database_value(raw["title"]),
-                to_database_value(raw["genres"]),
                 to_database_value(raw["description"]),
                 to_database_value(raw["url"]),
                 to_database_value(clean["price_eur"]),
@@ -118,7 +115,6 @@ def prepare_analytics_records(
                 to_database_value(clean["launch_date_precision"]),
                 to_database_value(clean["review_count"]),
                 to_database_value(raw["general_reviews"]),
-                to_database_value(raw["tags"]),
                 bool(raw["is_error"]),
             )
         )
@@ -156,11 +152,18 @@ def load_analytics_data() -> int:
     print(f"\nPrepared records: {len(records)}")
     print("Loading records into analytics.steam_items...")
 
-    # The transaction commits on success and rolls back on failure.
+    # Clear relationship tables before resetting steam_items.
+    # All three tables are truncated in one transaction.
     with psycopg.connect(**config) as connection:
         with connection.cursor() as cursor:
             cursor.execute(
-                "TRUNCATE TABLE analytics.steam_items RESTART IDENTITY"
+                """
+                TRUNCATE TABLE
+                    analytics.item_genres,
+                    analytics.item_tags,
+                    analytics.steam_items
+                RESTART IDENTITY
+                """
             )
 
             cursor.executemany(INSERT_QUERY, records)

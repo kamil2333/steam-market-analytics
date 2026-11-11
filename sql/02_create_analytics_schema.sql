@@ -8,7 +8,6 @@ CREATE TABLE IF NOT EXISTS analytics.steam_items (
         REFERENCES staging.steam_games_raw(raw_id),
 
     title TEXT NOT NULL,
-    genres TEXT,
     description TEXT,
     url TEXT,
 
@@ -45,7 +44,6 @@ CREATE TABLE IF NOT EXISTS analytics.steam_items (
         CHECK (review_count IS NULL OR review_count >= 0),
 
     general_reviews TEXT,
-    tags TEXT,
 
     is_source_error BOOLEAN NOT NULL,
 
@@ -80,7 +78,7 @@ CREATE TABLE IF NOT EXISTS analytics.steam_items (
 );
 
 COMMENT ON TABLE analytics.steam_items IS
-    'Typed analytical representation of Steam store items.';
+    'Typed analytical representation of Steam store items. Genres and tags are normalized into separate relational tables.';
 
 COMMENT ON COLUMN analytics.steam_items.source_raw_id IS
     'Reference to the corresponding source record in the staging schema.';
