@@ -124,7 +124,14 @@ def load_raw_data() -> int:
     with psycopg.connect(**config) as connection:
         with connection.cursor() as cursor:
             cursor.execute(
-                "TRUNCATE TABLE staging.steam_games_raw RESTART IDENTITY"
+            """
+            TRUNCATE TABLE
+                analytics.item_genres,
+                analytics.item_tags,
+                analytics.steam_items,
+                staging.steam_games_raw
+            RESTART IDENTITY
+            """
             )
 
             cursor.executemany(INSERT_SQL, records)
