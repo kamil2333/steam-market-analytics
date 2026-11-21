@@ -1,284 +1,296 @@
 # Steam Market Analytics
 
-A data analytics and engineering portfolio project focused on exploring video game data from Steam.
+A data analytics and engineering portfolio project exploring a snapshot of Steam game listings. It demonstrates a workflow from raw data inspection and quality checks through Python-based transformation, PostgreSQL data modeling, SQL analysis, and an interactive Power BI dashboard.
 
-The project demonstrates an end-to-end analytical workflow, covering raw data inspection, data cleaning, database design, data ingestion, SQL analysis, and interactive visualization using Power BI.
-
-The main objective is to transform raw game data into structured, reliable datasets and derive meaningful insights about game prices, discounts, genres, tags, and review activity.
+The goal is to turn raw game data into structured, validated datasets and investigate game prices, discounts, review activity, genres, and tags.
 
 ## Project goals
 
-- Inspect and assess raw dataset quality.
-- Clean, transform, and validate data using Python and Pandas.
-- Design and implement a relational data model in PostgreSQL.
-- Build a structured data pipeline for database ingestion.
-- Perform analytical queries using SQL.
-- Develop interactive dashboards using Power BI and DAX.
-- Explore statistical relationships and trends in the data.
-- Document analytical findings and data limitations.
+- Inspect the dataset and assess data quality.
+- Clean, transform, and validate records with Python and Pandas.
+- Design staging and analytical schemas in PostgreSQL.
+- Automate ingestion and the population of normalized tables.
+- Explore the data through analytical SQL queries.
+- Present findings in Power BI using DAX measures and interactive filters.
+- Document conclusions, assumptions, and limitations.
 
 ## Tech stack
 
 | Technology | Purpose |
-|---|---|
-| Python | Data processing and ingestion |
-| Pandas | Data cleaning and transformation |
-| PostgreSQL | Relational database and data storage |
-| SQL | Data modeling and analytical queries |
-| Power BI | Interactive dashboards and visualization |
+| --- | --- |
+| Python | Data processing and ETL orchestration |
+| Pandas | Cleaning, transformation, and validation |
+| PostgreSQL | Relational data storage |
+| SQL | Database modeling, normalization, and analysis |
+| Power BI | Interactive reporting and visualization |
 | DAX | Measures and analytical calculations |
-| Git & GitHub | Version control and project management |
+| pytest | Automated Python tests |
+| Git & GitHub | Version control and project documentation |
 
 ## Project structure
 
 ```text
 steam-game-analisys/
 ├── data/
-│   ├── raw/
-│   └── processed/
+│   ├── raw/                      # Source CSV (not tracked)
+│   └── processed/                # Optional CSV outputs (not tracked)
 ├── docs/
 │   └── analytical_findings.md
 ├── src/
-│   └── inspect_data.py
+│   ├── cleaning.py
+│   ├── inspect_data.py
+│   ├── load_analytics_data.py
+│   ├── load_raw_data.py
+│   ├── profile_data.py
+│   ├── run_etl.py
+│   ├── run_pipeline.py
+│   └── validation.py
 ├── sql/
 │   ├── 01_create_raw_schema.sql
 │   ├── 02_create_analytics_schema.sql
 │   ├── 03_create_normalized_schema.sql
 │   ├── 04_populate_normalized_tables.sql
+│   ├── 05_drop_denormalized_genre_tag_columns.sql
 │   └── analysis/
+│       ├── 01_dataset_overview.sql
+│       ├── 02_price_vs_reviews.sql
+│       ├── 03_reviews_by_rating.sql
+│       ├── 04_discount_consistency.sql
+│       ├── 05_discount_distribution.sql
+│       ├── 06_genre_performance.sql
+│       ├── 07_tag_performance.sql
+│       ├── 08_genre_tag_relationship.sql
+│       ├── 09_tag_count_vs_popularity.sql
+│       └── 10_release_year_vs_popularity.sql
+├── tests/
+│   ├── test_cleaning.py
+│   ├── test_pipeline.py
+│   ├── test_profile_data.py
+│   └── test_validation.py
 ├── reports/
-│   └── steam_market_analysis.pbix
+│   ├── screenshots/
+│   │   ├── overview.png
+│   │   ├── prices_discounts.png
+│   │   ├── reviews_popularity.png
+│   │   └── genres_tags.png
+│   ├── steam_market_analysis.pbix
+│   └── steam_market_analysis.pdf
 ├── .gitignore
 ├── README.md
 └── requirements.txt
 ```
 
-The `data/raw/` and `data/processed/` directories are excluded from version control where appropriate.
+The source and processed CSV files are excluded from version control. Local PostgreSQL credentials belong in an untracked `.env` file.
 
 ## Data source
 
-The project uses a publicly available Steam games dataset.
+The project uses a publicly available [Steam Games Dataset on Zenodo](https://zenodo.org/records/15121027).
 
-Source: [Steam Games Dataset – Zenodo](https://zenodo.org/records/15121027)
-
-The dataset is not included in this repository. Its original snapshot is used for analytical purposes.
-
-The results describe the collected dataset and should not be interpreted as current Steam prices, discounts, or review counts.
+The original dataset is **not** included in this repository. Results reflect a collected snapshot, **not** current Steam prices, discounts, or review counts.
 
 ## Data processing and database design
 
-The data workflow consists of several stages:
+The database separates original source records from analytical data:
 
-1. **Raw data inspection** – examining dataset structure, data types, missing values, and inconsistencies.
-2. **Data cleaning** – processing and validating raw data using Python and Pandas.
-3. **Data ingestion** – loading processed data into PostgreSQL.
-4. **Database modeling** – separating raw and analytical data into dedicated schemas.
-5. **Normalization** – extracting genres and tags into relational tables to support more flexible analysis.
-6. **SQL analysis** – investigating prices, discounts, reviews, genres, and other game attributes.
-7. **Visualization** – connecting PostgreSQL to Power BI and building interactive reports.
+1. **Raw inspection:** examine columns, types, missing values, and unusual records.
+2. **Staging ingestion:** load the original CSV into `staging.steam_games_raw`.
+3. **Cleaning and validation:** use Python and Pandas to normalize fields and check data quality.
+4. **Analytical ingestion:** load transformed records into `analytics.steam_items`.
+5. **Normalization:** populate genre/tag dictionaries and their many-to-many relationship tables.
+6. **SQL analysis:** investigate pricing, discounts, reviews, release years, genres, and tags.
+7. **Visualization:** refresh the Power BI report connected to PostgreSQL.
 
-The analytical database includes normalized tables for Steam items, genres, tags, and their relationships.
+The analytical model includes `analytics.steam_items`, `analytics.genres`, `analytics.tags`, `analytics.item_genres`, and `analytics.item_tags`. Relationship tables allow one game to have multiple genres and tags.
 
-This structure supports analysis of many-to-many relationships between games, genres, and tags.
+## Running the project
+
+### Prerequisites
+
+- Python with dependencies from `requirements.txt`.
+- A running PostgreSQL instance and a dedicated project database.
+- The source dataset saved as `data/raw/steam-games.csv`.
+- A `.env` file in the project root with database connection settings.
+
+Install dependencies from the project root:
+
+```bash
+pip install -r requirements.txt
+```
+
+Create the `.env` file with your own PostgreSQL credentials:
+
+```dotenv
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=steam_market_analysis
+DB_USER=your_database_user
+DB_PASSWORD=your_database_password
+```
+
+Before the first ETL run, create the database objects by executing these scripts **in order** against your project database:
+
+1. `sql/01_create_raw_schema.sql`
+2. `sql/02_create_analytics_schema.sql`
+3. `sql/03_create_normalized_schema.sql`
+
+These are initial setup scripts; they should not be rerun indiscriminately against an existing database. The optional `05_drop_denormalized_genre_tag_columns.sql` is a schema migration, **not** part of the regular ETL run.
+
+### Option A: Clean and validate a CSV without PostgreSQL
+
+```bash
+python -m src.run_pipeline
+```
+
+This standalone command creates:
+
+- `data/processed/steam-games-cleaned.csv` (only when validation passes)
+- `data/processed/validation-report.csv`
+
+Use this when you only need the cleaned dataset and its validation report.
+
+### Option B: Run the complete PostgreSQL ETL
+
+```bash
+python -m src.run_etl
+```
+
+This command:
+
+1. Loads the original CSV into staging.
+2. Cleans and validates staging data.
+3. Loads the analytical game records.
+4. Populates genre/tag dictionaries and relationship tables using `sql/04_populate_normalized_tables.sql`.
+5. Verifies record counts and that relationship tables are populated.
+
+**Important:** The full ETL replaces records in the staging and analytical tables. It uses separate transactions for its stages, so an error can leave a partially refreshed database. Run it only against a dedicated project database, keep backups of data you need, and rerun after fixing the underlying error.
+
+The ETL prepares the data for reporting; it does **not** automatically refresh Power BI. Open `reports/steam_market_analysis.pbix` and refresh the dataset in Power BI Desktop after an ETL run.
+
+### Run automated tests
+
+```bash
+python -m pytest -v
+```
+
+### Example validation outcome
+
+The latest local ETL run processed **2,927** records and completed with **6 PASS, 3 WARN, and 0 FAIL** checks. The three warnings identify limitations to investigate rather than silently altering the underlying data:
+
+- 560 records with missing prices.
+- 731 records with missing review counts.
+- 7 unusually distant future release dates (2050 or later).
+
+The run also populated 47 genre names, 393 tags, 6,007 game–genre relationships, and 14,182 game–tag relationships.
 
 ## Power BI dashboard
 
-The interactive Power BI dashboard consists of four pages, each focusing on a different aspect of the dataset.
-
-The report uses DAX measures, calculated columns, and interactive filters to support data exploration.
-
-
-## Dashboard preview
-
-The Power BI dashboard consists of four interactive pages covering game prices, discounts, reviews, genres, and tags.
+The Power BI report contains four interactive pages. It uses DAX measures and filters to explore pricing, reviews, genres, and tags.
 
 ### 1. Overview
 
 ![Overview dashboard](reports/screenshots/overview.png)
 
+Provides the dataset overview: number of games, review coverage, average and median prices, release-year distribution, leading genres, and rankings by review count. Includes genre and release-year filters.
+
 ### 2. Prices & discounts
 
 ![Prices and discounts dashboard](reports/screenshots/prices_discounts.png)
+
+Explores the number of discounted games, average discount, original and discounted prices, discount ranges, and the relationship between discounts and review activity.
 
 ### 3. Reviews & popularity
 
 ![Reviews and popularity dashboard](reports/screenshots/reviews_popularity.png)
 
+Compares review categories, total and average reviews, the most-reviewed games, review activity across release years, and the distribution of review counts.
+
 ### 4. Genres & tags
 
 ![Genres and tags dashboard](reports/screenshots/genres_tags.png)
 
-### Full report
+Examines tag frequency, tags ranked by median review count, popular tags within a selected genre, and review activity by tag count.
 
-[View the complete dashboard (PDF)](reports/steam_market_analysis.pdf)
-
-
-### 1. Overview
-
-Provides a general overview of the dataset, game prices, release years, and genre-level statistics.
-
-Visualizations include:
-
-- Total number of games.
-- Number of games with review data.
-- Review data coverage.
-- Average and median game prices.
-- Distribution of games by release year.
-- Top genres by total review count.
-- Average game prices by genre.
-- Ranking of games by review count.
-- Interactive genre and release year filters.
-
-### 2. Pricing & discounts
-
-Focuses on game pricing patterns, discount distribution, and review activity across discount ranges.
-
-Visualizations include:
-
-- Number of discounted games.
-- Average discount percentage.
-- Average original price of discounted games.
-- Average price after discount.
-- Distribution of games across discount ranges.
-- Comparison of average and median review counts by discount range.
-- Scatter plot showing the relationship between original price and discount percentage.
-
-### 3. Reviews & popularity
-
-Explores review activity, popularity distribution, and differences between review categories.
-
-Visualizations include:
-
-- Number of games by review category.
-- Total review count by category.
-- Average review count by category.
-- Top 10 games by review count.
-- Average and median review counts by release year.
-- Distribution of games across review-count ranges.
-
-### 4. Genres & tags
-
-Investigates tag frequency, review-based popularity, and relationships between genres and tags.
-
-Visualizations include:
-
-- Top 10 most frequently assigned tags.
-- Top 10 tags ranked by median review count.
-- Interactive ranking of tags within a selected genre.
-- Median review count by number of assigned tags.
-- Genre-based filtering.
+**[View the complete dashboard (PDF)](reports/steam_market_analysis.pdf)**
 
 ## Key analytical findings
 
-The following findings are based on the analyzed dataset snapshot containing 2,927 Steam store items.
+The observations below describe the analyzed snapshot of **2,927 Steam items**.
 
 ### Price distribution
 
-- Total dataset size: 2,927 items.
-- 2,367 items have a recorded price.
-- 560 items (19.13%) have missing prices.
+- 2,367 items have a recorded price, while 560 have missing prices (19.13%).
 - 188 items have a listed price of €0.
-- Average recorded price: €15.89.
-- Median recorded price: €10.35.
+- Average recorded price: **€15.89**.
+- Median recorded price: **€10.35**.
 
-The difference between the average and median suggests that higher-priced games influence the overall average.
+The average exceeds the median, suggesting that higher-priced games influence the mean.
 
 ### Review data
 
-- 2,196 items have a recorded review count.
-- 731 items have missing review counts.
-- The most common review category is Very Positive, containing 1,034 games.
-- Counter-Strike 2 has the highest recorded review count, with 8,679,136 reviews.
-- Review counts are unevenly distributed, with a relatively small number of highly reviewed games influencing aggregate statistics.
+- 2,196 items have a recorded review count; 731 do not.
+- **Very Positive** is the most common review category, with 1,034 games.
+- **Counter-Strike 2** has the highest recorded review count: **8,679,136**.
+
+A small number of highly reviewed titles strongly influence aggregate statistics.
 
 ### Discount analysis
 
 - 641 items have a recorded discount.
-- Average discount: 47.85%.
-- Average original price of discounted games: €19.01.
-- Average price after discount: €9.41.
-- The most common discount range is 26–50%, covering 233 games (36.35% of discounted items).
+- Average discount: **47.85%**.
+- Average original price among discounted games: **€19.01**.
+- Average price after discount: **€9.41**.
+- The 26–50% discount range is the most common: 233 games (36.35% of discounted items).
 - Discounts above 50% account for approximately 39.63% of discounted items.
-- The average absolute difference between recorded and calculated discount percentages is 0.05 percentage points.
-- No checked item exceeds the 1-percentage-point validation tolerance.
+- The average absolute difference between recorded and calculated discounts is 0.05 percentage points, with no checked item exceeding the 1-percentage-point validation tolerance.
 
 ### Discounts and review activity
 
-An exploratory comparison of average and median review counts across discount ranges revealed:
+- The 51–75% discount range has the highest **average** review count.
+- The 76–100% discount range has the highest **median** review count.
+- Large gaps between means and medians indicate the influence of outliers.
 
-- Games discounted by 51–75% have the highest average review count.
-- Games discounted by 76–100% have the highest median review count.
-- Large differences between averages and medians indicate the influence of highly reviewed games.
-
-These results describe associations within the collected dataset rather than causal relationships between discounts and game popularity.
+These are descriptive associations; they do **not** show that larger discounts cause more reviews.
 
 ### Genres and tags
 
-- The most frequently assigned tag is Simulación, appearing in 740 games.
-- Acción is the second most frequent tag, appearing in 604 games.
-- Estrategia appears in 515 games.
-- The Robos tag has the highest median review count in the displayed ranking.
-- The interactive analysis allows users to explore tag distributions within individual genres.
+- **Simulación** is the most frequently assigned tag (740 games).
+- **Acción** follows with 604 games, and **Estrategia** with 515.
+- **Robos** has the highest median review count in the displayed tag ranking.
+- Genre filtering reveals how tag frequencies vary within different game categories.
 
-Frequently assigned tags do not necessarily correspond to tags associated with the highest review counts.
+Frequently used tags are not necessarily associated with the highest review counts. Tag rankings should be interpreted carefully when groups contain few games.
 
-## Detailed analytical findings
-
-More detailed observations, interpretations, and limitations are documented in:
-
-[Analytical findings](docs/analytical_findings.md)
-
-This document covers pricing, discounts, review activity, popularity, genres, tags, and overall analytical conclusions.
+For extended interpretations and limitations, see **[Detailed analytical findings](docs/analytical_findings.md)**.
 
 ## Project status
 
-**Dashboard and core analytical workflow completed. Documentation and reproducibility improvements ongoing.**
+**Core workflow and dashboard completed; further reproducibility and validation improvements are possible.**
 
-### Completed
+Completed:
 
-- Raw data profiling and quality assessment.
-- Data cleaning and transformation using Python and Pandas.
-- Automated unit tests and data validation checks.
+- Raw data profiling, cleaning, and automated validation checks.
 - PostgreSQL staging and analytical schemas.
-- Python-based data ingestion into PostgreSQL.
-- Normalized relational tables for genres and tags.
-- Analytical SQL queries covering prices, reviews, discounts, genres, and tags.
-- PostgreSQL connection to Power BI.
-- Four-page interactive Power BI dashboard.
-- Initial documentation of analytical findings and limitations.
+- Python ingestion and a single-command ETL runner.
+- Normalized genre/tag tables and analytical SQL queries.
+- Automated Python tests.
+- Four-page interactive Power BI dashboard, report PDF, and previews.
+- Written analytical findings and data limitations.
 
-### In progress
+Potential next steps:
 
-- Final data and dashboard validation.
-- Repository documentation improvements.
-- Preparing dashboard screenshots for GitHub.
-- Improving reproducibility instructions.
-
-### Planned
-
-- Automate selected pipeline tasks through GitHub Actions.
-- Expand data quality checks.
-- Improve pipeline reproducibility.
-- Evaluate additional statistical analyses.
-- Explore potential machine learning applications based on the available data.
-
-## Future improvements
-
-- Expand automated data validation.
-- Improve pipeline automation and reproducibility.
-- Extend analytical SQL queries.
-- Explore additional statistical relationships.
-- Improve dashboard accessibility and usability.
-- Document the complete data pipeline.
-- Evaluate potential machine learning applications.
+- Test a clean installation and database rebuild from scratch.
+- Strengthen end-to-end transaction handling and failure recovery.
+- Expand data-quality and integration tests.
+- Investigate statistical relationships and additional business questions.
+- Consider CI checks (e.g., GitHub Actions).
 
 ## Data limitations
 
-- The dataset represents a historical snapshot and does not reflect current Steam market conditions.
-- The collected sample does not necessarily represent the entire Steam catalog.
+- The data is a historical snapshot, not a live view of the Steam market.
+- The sample may not represent the entire Steam catalog.
 - Missing values are retained and are not automatically treated as zero.
-- Review counts and discount information may be incomplete.
-- Review counts do not directly represent sales, revenue, or active players.
-- Genre and tag assignments can overlap, meaning a single game may belong to multiple categories.
-- Recorded release dates depend on the original dataset and may not always represent the release date of the current version of a game.
-- Observational relationships should not be interpreted as evidence of causation.
+- Review and discount data may be incomplete.
+- Review counts are not equivalent to sales, revenue, or active players.
+- A game can belong to multiple genres and have multiple tags.
+- Original release-date values can be ambiguous or unusually far in the future.
+- Observed relationships are not evidence of causation.
